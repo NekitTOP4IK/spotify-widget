@@ -111,7 +111,7 @@ function UpdatePlayer(data) {
 	const albumArt = data.item.album.images.length > 0 ?
 		`${data.item.album.images[0].url}`
 		: `images/placeholder-album-art.png`;					// The album art URL
-	const artist = `${data.item.artists[0].name}`;				// Name of the artist
+	const artist = data.item.artists.map(a => a.name).join(", ");	// All artists
 	const name = `${data.item.name}`;							// Name of the song
 	const duration = `${data.item.duration_ms/1000}`;			// The duration of the song in seconds
 	const progress = `${data.progress_ms/1000}`;				// The current position in seconds
@@ -228,12 +228,16 @@ function ApplyMarqueeVars(div, textW) {
 
 function StartMarquee(div) {
 	div.classList.remove("marquee-run");
+	div.classList.remove("marquee-appear");
 	void div.offsetWidth;
 	div.classList.add("marquee-run");
 	div.dataset.marqueePhase = "running";
 
 	div.marqueeHandler = () => {
 		delete div.marqueeHandler;
+		div.classList.remove("marquee-run");
+		void div.offsetWidth;
+		div.classList.add("marquee-appear");
 		div.dataset.marqueePhase = "pause";
 		div.marqueeTimer = setTimeout(() => {
 			const overflow = div.scrollWidth - div.clientWidth;
@@ -256,6 +260,7 @@ function StopMarquee(div) {
 	delete div.dataset.marqueePhase;
 	delete div.dataset.marqueeText;
 	div.classList.remove("marquee-run");
+	div.classList.remove("marquee-appear");
 }
 
 
