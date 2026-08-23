@@ -13,7 +13,7 @@ let access_token = "";
 const visibilityDuration = urlParams.get("duration") || 0;
 const hideAlbumArt = urlParams.has("hideAlbumArt");
 const showEQ = urlParams.has("eq");
-const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 15;
+const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 22;
 const marqueeCooldown = parseFloat(urlParams.get("marqueeCooldown")) || 2;
 
 let currentState = false;
@@ -215,16 +215,15 @@ function ConfigureMarquee(div) {
 		return;
 	}
 
-	ApplyMarqueeVars(div, div.clientWidth, div.scrollWidth);
+	ApplyMarqueeVars(div, div.scrollWidth);
 	div.dataset.marqueeText = div.innerText;
 	StartMarquee(div);
 }
 
-function ApplyMarqueeVars(div, clientW, textW) {
+function ApplyMarqueeVars(div, textW) {
 	textW += 10;
-	div.style.setProperty("--marquee-start", `${clientW}px`);
 	div.style.setProperty("--marquee-text", `${textW}px`);
-	div.style.setProperty("--marquee-duration", `${((clientW + textW) / marqueeSpeed).toFixed(2)}s`);
+	div.style.setProperty("--marquee-duration", `${(textW / marqueeSpeed).toFixed(2)}s`);
 }
 
 function StartMarquee(div) {
@@ -242,7 +241,7 @@ function StartMarquee(div) {
 				StopMarquee(div);
 				return;
 			}
-			ApplyMarqueeVars(div, div.clientWidth, div.scrollWidth);
+			ApplyMarqueeVars(div, div.scrollWidth);
 			StartMarquee(div);
 		}, marqueeCooldown * 1000);
 	};

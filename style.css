@@ -213,7 +213,7 @@ body {
 
 @keyframes marquee {
 	from {
-		transform: translateX(var(--marquee-start));
+		transform: translateX(0);
 	}
 	to {
 		transform: translateX(calc(-1 * var(--marquee-text)));
