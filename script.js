@@ -215,34 +215,25 @@ function ConfigureMarquee(div) {
 		return;
 	}
 
-	ApplyMarqueeVars(div, overflow);
+	ApplyMarqueeVars(div, div.clientWidth, div.scrollWidth);
 	div.dataset.marqueeText = div.innerText;
-
-	if (!div.dataset.marqueePhase) {
-		StartMarquee(div, false);
-		return;
-	}
-
-	const wasReturn = div.dataset.marqueePhase === "return";
-	StopMarquee(div);
-	StartMarquee(div, wasReturn);
+	StartMarquee(div);
 }
 
-function ApplyMarqueeVars(div, overflow) {
-	const shift = overflow + 10;
-	div.style.setProperty("--marquee-shift", `${shift}px`);
-	div.style.setProperty("--marquee-duration", `${(shift / marqueeSpeed).toFixed(2)}s`);
+function ApplyMarqueeVars(div, clientW, textW) {
+	textW += 10;
+	div.style.setProperty("--marquee-start", `${clientW}px`);
+	div.style.setProperty("--marquee-text", `${textW}px`);
+	div.style.setProperty("--marquee-duration", `${((clientW + textW) / marqueeSpeed).toFixed(2)}s`);
 }
 
-function StartMarquee(div, isReturn) {
-	const addCls = isReturn ? "marquee-back" : "marquee-go";
-	const dropCls = isReturn ? "marquee-go" : "marquee-back";
-	div.classList.remove(dropCls);
-	div.classList.add(addCls);
-	div.dataset.marqueePhase = isReturn ? "return" : "forward";
+function StartMarquee(div) {
+	div.classList.remove("marquee-run");
+	void div.offsetWidth;
+	div.classList.add("marquee-run");
+	div.dataset.marqueePhase = "running";
 
 	div.marqueeHandler = () => {
-		const finishedReturn = isReturn;
 		delete div.marqueeHandler;
 		div.dataset.marqueePhase = "pause";
 		div.marqueeTimer = setTimeout(() => {
@@ -251,8 +242,8 @@ function StartMarquee(div, isReturn) {
 				StopMarquee(div);
 				return;
 			}
-			ApplyMarqueeVars(div, overflow);
-			StartMarquee(div, !finishedReturn);
+			ApplyMarqueeVars(div, div.clientWidth, div.scrollWidth);
+			StartMarquee(div);
 		}, marqueeCooldown * 1000);
 	};
 	div.addEventListener("animationend", div.marqueeHandler, { once: true });
@@ -265,8 +256,7 @@ function StopMarquee(div) {
 	delete div.marqueeHandler;
 	delete div.dataset.marqueePhase;
 	delete div.dataset.marqueeText;
-	div.classList.remove("marquee-go");
-	div.classList.remove("marquee-back");
+	div.classList.remove("marquee-run");
 }
 
 

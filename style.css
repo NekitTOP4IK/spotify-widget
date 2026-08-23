@@ -211,28 +211,15 @@ body {
 	transition: all 0.25s ease;
 }
 
-@keyframes marquee-go {
+@keyframes marquee {
 	from {
-		transform: translateX(0);
+		transform: translateX(var(--marquee-start));
 	}
 	to {
-		transform: translateX(calc(-1 * var(--marquee-shift)));
+		transform: translateX(calc(-1 * var(--marquee-text)));
 	}
 }
 
-@keyframes marquee-back {
-	from {
-		transform: translateX(calc(-1 * var(--marquee-shift)));
-	}
-	to {
-		transform: translateX(0);
-	}
-}
-
-#songLabel.marquee-go {
-	animation: marquee-go var(--marquee-duration) ease-in-out forwards;
-}
-
-#songLabel.marquee-back {
-	animation: marquee-back var(--marquee-duration) ease-in-out forwards;
+#songLabel.marquee-run {
+	animation: marquee var(--marquee-duration) linear forwards;
 }
