@@ -211,7 +211,7 @@ body {
 	transition: all 0.25s ease;
 }
 
-@keyframes marquee {
+@keyframes marquee-go {
 	from {
 		transform: translateX(0);
 	}
@@ -220,10 +220,19 @@ body {
 	}
 }
 
-#songLabel.marquee {
-	animation: marquee var(--marquee-duration) ease-in-out;
+@keyframes marquee-back {
+	from {
+		transform: translateX(calc(-1 * var(--marquee-shift)));
+	}
+	to {
+		transform: translateX(0);
+	}
 }
 
-#songLabel.marquee-return {
-	animation: marquee var(--marquee-duration) ease-in-out alternate;
+#songLabel.marquee-go {
+	animation: marquee-go var(--marquee-duration) ease-in-out forwards;
+}
+
+#songLabel.marquee-back {
+	animation: marquee-back var(--marquee-duration) ease-in-out forwards;
 }

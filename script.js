@@ -13,7 +13,7 @@ let access_token = "";
 const visibilityDuration = urlParams.get("duration") || 0;
 const hideAlbumArt = urlParams.has("hideAlbumArt");
 const showEQ = urlParams.has("eq");
-const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 20;
+const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 15;
 const marqueeCooldown = parseFloat(urlParams.get("marqueeCooldown")) || 2;
 
 let currentState = false;
@@ -223,7 +223,7 @@ function ConfigureMarquee(div) {
 		return;
 	}
 
-	const wasReturn = div.classList.contains("marquee-return");
+	const wasReturn = div.dataset.marqueePhase === "return";
 	StopMarquee(div);
 	StartMarquee(div, wasReturn);
 }
@@ -235,13 +235,14 @@ function ApplyMarqueeVars(div, overflow) {
 }
 
 function StartMarquee(div, isReturn) {
-	const cls = isReturn ? "marquee-return" : "marquee";
-	div.classList.add(cls);
+	const addCls = isReturn ? "marquee-back" : "marquee-go";
+	const dropCls = isReturn ? "marquee-go" : "marquee-back";
+	div.classList.remove(dropCls);
+	div.classList.add(addCls);
 	div.dataset.marqueePhase = isReturn ? "return" : "forward";
 
 	div.marqueeHandler = () => {
 		const finishedReturn = isReturn;
-		div.classList.remove(cls);
 		delete div.marqueeHandler;
 		div.dataset.marqueePhase = "pause";
 		div.marqueeTimer = setTimeout(() => {
@@ -263,8 +264,9 @@ function StopMarquee(div) {
 		div.removeEventListener("animationend", div.marqueeHandler);
 	delete div.marqueeHandler;
 	delete div.dataset.marqueePhase;
-	div.classList.remove("marquee");
-	div.classList.remove("marquee-return");
+	delete div.dataset.marqueeText;
+	div.classList.remove("marquee-go");
+	div.classList.remove("marquee-back");
 }
 
 
