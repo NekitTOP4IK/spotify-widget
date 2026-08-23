@@ -12,6 +12,8 @@ let access_token = "";
 
 const visibilityDuration = urlParams.get("duration") || 0;
 const hideAlbumArt = urlParams.has("hideAlbumArt");
+const showEQ = urlParams.has("eq");
+const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 30;
 
 let currentState = false;
 let currentSongUri = "";
@@ -161,6 +163,7 @@ function UpdatePlayer(data) {
 	// Set song info
 	UpdateTextLabel(document.getElementById("artistLabel"), artist);
 	UpdateTextLabel(document.getElementById("songLabel"), name);
+	ConfigureMarquee(document.getElementById("songLabel"));
 	
 	// Set progressbar
 	const progressPerc = ((progress / duration) * 100);			// Progress expressed as a percentage
@@ -180,10 +183,13 @@ function UpdatePlayer(data) {
 
 function UpdateTextLabel(div, text) {
 	if (div.innerText != text) {
-		div.setAttribute("class", "text-fade");
+		div.classList.remove("text-show");
+		div.classList.add("text-fade");
 		setTimeout(() => {
 			div.innerText = text;
-			div.setAttribute("class", ".text-show");
+			div.classList.remove("text-fade");
+			div.classList.add("text-show");
+			ConfigureMarquee(div);
 		}, 500);
 	}
 }
@@ -195,6 +201,19 @@ function UpdateAlbumArt(div, imgsrc) {
 			div.src = imgsrc;
 			div.setAttribute("class", "text-show");
 		}, 500);
+	}
+}
+
+function ConfigureMarquee(div) {
+	const overflow = div.scrollWidth - div.clientWidth;
+
+	if (overflow > 0) {
+		const shift = overflow + 10;
+		div.style.setProperty("--marquee-shift", `${shift}px`);
+		div.style.setProperty("--marquee-duration", `${(shift / marqueeSpeed).toFixed(2)}s`);
+		div.classList.add("marquee");
+	} else {
+		div.classList.remove("marquee");
 	}
 }
 
@@ -257,6 +276,10 @@ function resize() {
 if (hideAlbumArt) {
 	document.getElementById("albumArtBox").style.display = "none";
 	document.getElementById("songInfoBox").style.width = "calc(100% - 20px)";
+}
+
+if (showEQ) {
+	document.getElementById("mainContainer").classList.add("show-eq");
 }
 
 
