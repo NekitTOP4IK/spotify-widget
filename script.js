@@ -14,6 +14,7 @@ const visibilityDuration = urlParams.get("duration") || 0;
 const hideAlbumArt = urlParams.has("hideAlbumArt");
 const showEQ = urlParams.has("eq");
 const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 30;
+const marqueeCooldown = parseFloat(urlParams.get("marqueeCooldown")) || 2;
 
 let currentState = false;
 let currentSongUri = "";
@@ -207,14 +208,39 @@ function UpdateAlbumArt(div, imgsrc) {
 function ConfigureMarquee(div) {
 	const overflow = div.scrollWidth - div.clientWidth;
 
-	if (overflow > 0) {
-		const shift = overflow + 10;
-		div.style.setProperty("--marquee-shift", `${shift}px`);
-		div.style.setProperty("--marquee-duration", `${(shift / marqueeSpeed).toFixed(2)}s`);
-		div.classList.add("marquee");
-	} else {
-		div.classList.remove("marquee");
+	if (overflow <= 0) {
+		StopMarquee(div);
+		return;
 	}
+
+	const shift = overflow + 10;
+	div.style.setProperty("--marquee-shift", `${shift}px`);
+	div.style.setProperty("--marquee-duration", `${(shift / marqueeSpeed).toFixed(2)}s`);
+
+	if (div.dataset.marqueeState === "running" || div.dataset.marqueeState === "cooldown")
+		return;
+
+	div.classList.add("marquee");
+	div.dataset.marqueeState = "running";
+
+	div.marqueeHandler = () => {
+		div.dataset.marqueeState = "cooldown";
+		div.classList.remove("marquee");
+		div.marqueeTimer = setTimeout(() => {
+			delete div.dataset.marqueeState;
+			ConfigureMarquee(div);
+		}, marqueeCooldown * 1000);
+	};
+	div.addEventListener("animationend", div.marqueeHandler, { once: true });
+}
+
+function StopMarquee(div) {
+	clearTimeout(div.marqueeTimer);
+	if (div.marqueeHandler)
+		div.removeEventListener("animationend", div.marqueeHandler);
+	delete div.marqueeHandler;
+	delete div.dataset.marqueeState;
+	div.classList.remove("marquee");
 }
 
 
