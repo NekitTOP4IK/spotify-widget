@@ -221,5 +221,9 @@ body {
 }
 
 #songLabel.marquee {
-	animation: marquee var(--marquee-duration) ease-in-out 2 alternate;
+	animation: marquee var(--marquee-duration) ease-in-out;
+}
+
+#songLabel.marquee-return {
+	animation: marquee var(--marquee-duration) ease-in-out alternate;
 }

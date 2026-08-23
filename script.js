@@ -13,7 +13,7 @@ let access_token = "";
 const visibilityDuration = urlParams.get("duration") || 0;
 const hideAlbumArt = urlParams.has("hideAlbumArt");
 const showEQ = urlParams.has("eq");
-const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 30;
+const marqueeSpeed = parseFloat(urlParams.get("marqueeSpeed")) || 20;
 const marqueeCooldown = parseFloat(urlParams.get("marqueeCooldown")) || 2;
 
 let currentState = false;
@@ -164,7 +164,6 @@ function UpdatePlayer(data) {
 	// Set song info
 	UpdateTextLabel(document.getElementById("artistLabel"), artist);
 	UpdateTextLabel(document.getElementById("songLabel"), name);
-	ConfigureMarquee(document.getElementById("songLabel"));
 	
 	// Set progressbar
 	const progressPerc = ((progress / duration) * 100);			// Progress expressed as a percentage
@@ -206,6 +205,9 @@ function UpdateAlbumArt(div, imgsrc) {
 }
 
 function ConfigureMarquee(div) {
+	if (div.dataset.marqueePhase && div.dataset.marqueeText === div.innerText)
+		return;
+
 	const overflow = div.scrollWidth - div.clientWidth;
 
 	if (overflow <= 0) {
@@ -213,22 +215,43 @@ function ConfigureMarquee(div) {
 		return;
 	}
 
+	ApplyMarqueeVars(div, overflow);
+	div.dataset.marqueeText = div.innerText;
+
+	if (!div.dataset.marqueePhase) {
+		StartMarquee(div, false);
+		return;
+	}
+
+	const wasReturn = div.classList.contains("marquee-return");
+	StopMarquee(div);
+	StartMarquee(div, wasReturn);
+}
+
+function ApplyMarqueeVars(div, overflow) {
 	const shift = overflow + 10;
 	div.style.setProperty("--marquee-shift", `${shift}px`);
 	div.style.setProperty("--marquee-duration", `${(shift / marqueeSpeed).toFixed(2)}s`);
+}
 
-	if (div.dataset.marqueeState === "running" || div.dataset.marqueeState === "cooldown")
-		return;
-
-	div.classList.add("marquee");
-	div.dataset.marqueeState = "running";
+function StartMarquee(div, isReturn) {
+	const cls = isReturn ? "marquee-return" : "marquee";
+	div.classList.add(cls);
+	div.dataset.marqueePhase = isReturn ? "return" : "forward";
 
 	div.marqueeHandler = () => {
-		div.dataset.marqueeState = "cooldown";
-		div.classList.remove("marquee");
+		const finishedReturn = isReturn;
+		div.classList.remove(cls);
+		delete div.marqueeHandler;
+		div.dataset.marqueePhase = "pause";
 		div.marqueeTimer = setTimeout(() => {
-			delete div.dataset.marqueeState;
-			ConfigureMarquee(div);
+			const overflow = div.scrollWidth - div.clientWidth;
+			if (overflow <= 0) {
+				StopMarquee(div);
+				return;
+			}
+			ApplyMarqueeVars(div, overflow);
+			StartMarquee(div, !finishedReturn);
 		}, marqueeCooldown * 1000);
 	};
 	div.addEventListener("animationend", div.marqueeHandler, { once: true });
@@ -239,8 +262,9 @@ function StopMarquee(div) {
 	if (div.marqueeHandler)
 		div.removeEventListener("animationend", div.marqueeHandler);
 	delete div.marqueeHandler;
-	delete div.dataset.marqueeState;
+	delete div.dataset.marqueePhase;
 	div.classList.remove("marquee");
+	div.classList.remove("marquee-return");
 }
 
 
